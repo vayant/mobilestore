@@ -1,0 +1,84 @@
+@model IEnumerable<mobilestore.ViewModels.OrderViewModel>
+
+@{
+    ViewData["Title"] = "История заказов";
+}
+
+<div class="container mt-4">
+    <h2>История заказов</h2>
+    <div class="table-responsive mt-4">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID заказа</th>
+                    <th>Пользователь</th>
+                    <th>Дата заказа</th>
+                    <th>Сумма заказа</th>
+                    <th>Товары</th>
+                    <th>Статус заказа</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var order in Model)
+                {
+                    <tr>
+                        <td>@order.Id</td>
+                        <td>@order.UserEmail</td>
+                        <td>@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@order.TotalAmount.ToString("N2") ₽</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick='showOrderDetails(@Html.Raw(Json.Serialize(order)))'>
+                                Просмотр (@order.Items.Count)
+                            </button>
+                        </td>
+                        <td>@order.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showOrderDetails(order) {
+            if (!order || !order.items) {
+                console.error('Invalid order data:', order);
+                return;
+            }
+
+            let itemsList = order.items.map(item => 
+                `<tr>
+                    <td>${item.productName}</td>
+                    <td>${item.quantity} шт.</td>
+                    <td>${item.price.toLocaleString('ru-RU')} ₽</td>
+                    <td>${(item.price * item.quantity).toLocaleString('ru-RU')} ₽</td>
+                </tr>`
+            ).join('');
+
+            Swal.fire({
+                title: 'Итоговый заказ',
+                html: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Количество товара</th>
+                                    <th>Цена цена за единицу</th>
+                                    <th>Общая сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsList}
+                            </tbody>
+                        </table>
+                    </div>
+                `,
+                width: '600px',
+                showCloseButton: true,
+                showConfirmButton: false
+            });
+        }
+    </script>
+} 

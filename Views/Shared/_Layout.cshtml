@@ -1,0 +1,628 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Звонилка</title>
+    <link rel="icon" type="image/png" href="~/favicon.jpg">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .price-block {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #333;
+            line-height: 1;
+        }
+        
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #e9ecef;
+            background-color: white;
+            transition: all 0.2s;
+            position: relative;
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        
+        .btn-icon:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            border-color: #dee2e6;
+        }
+        
+        .btn-icon:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        
+        .btn-icon i {
+            font-size: 1.1rem;
+            color: #6c757d;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            line-height: 1;
+        }
+        
+        .btn-icon[data-wishlist-button] i {
+            color: #dc3545;
+            margin: 0;
+        }
+        
+        .btn-icon[data-wishlist-button]:hover {
+            background-color: #fef2f2;
+            border-color: #dc3545;
+        }
+        
+        .btn-icon[onclick*="addToCart"] i {
+            color: #0d6efd;
+            margin: 0;
+        }
+        
+        .btn-icon[onclick*="addToCart"]:hover {
+            background-color: #f0f7ff;
+            border-color: #0d6efd;
+        }
+        
+        .product-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,.125);
+            border-radius: 0.25rem;
+        }
+
+        .product-image-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .product-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            padding: 10px;
+        }
+
+        .product-card .card-body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card .card-title {
+            margin-bottom: 0.5rem;
+        }
+
+        .product-card .d-flex.justify-content-between {
+            margin-top: auto;
+            width: 100%;
+        }
+
+        .product-card .btn-icon {
+            margin-left: 0.5rem;
+        }
+
+        .price-block {
+            text-align: left;
+        }
+
+        .main-price {
+            font-size: 1.25rem;
+        }
+
+        .search-form-inline {
+            margin-left: 2rem;
+            min-width: 400px;
+        }
+
+        .search-form-inline .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: none;
+        }
+
+        .search-form-inline .btn:hover {
+            background-color: #0b5ed7;
+        }
+
+        .search-form-inline .bi-search {
+            font-size: 1.1rem;
+        }
+
+        .nav-link.dropdown-toggle {
+            outline: none !important;
+        }
+        
+        .nav-link.dropdown-toggle:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        
+        .dropdown-toggle.btn:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+        
+        .dropdown-item:focus {
+            outline: none !important;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body data-user-authenticated="@(User.Identity?.IsAuthenticated == true ? "true" : "false")">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand me-4" href="/">Звонилка</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" href="/">
+                                <i class="bi bi-house-door"></i>
+                                <span>Главная</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center" href="/Category">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                                <span>Бренды</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <form id="searchForm" class="d-flex search-form-inline" action="/Home/Search" method="get">
+                                <div class="input-group">
+                                    <input class="form-control" type="search" name="query" 
+                                           placeholder="Поиск товаров..."
+                                           style="border-radius: 20px 0 0 20px; height: 40px; border: 2px solid #e9ecef; padding-left: 1.2rem;">
+                                    <button class="btn btn-primary" type="submit" 
+                                            style="border-radius: 0 20px 20px 0; height: 40px; padding: 0 1.5rem; border: none;">
+                                        <i class="bi bi-search"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </li>
+                    </ul>
+
+                    <div class="d-flex align-items-center">
+                        <a href="/Wishlist" class="nav-link d-flex align-items-center me-4">
+                            <i class="bi bi-bookmark-heart"></i>
+                            <span class="ms-1">Избранное</span>
+                        </a>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Balance" asp-action="Index" class="nav-link d-flex align-items-center me-4">
+                                <i class="bi bi-wallet2"></i>
+                                <span class="ms-1">Баланс: <span id="userBalance">@ViewBag.UserBalance?.ToString("N0")</span> ₽</span>
+                            </a>
+                        }
+
+                        <a href="/Cart" class="nav-link d-flex align-items-center me-4">
+                            <i class="bi bi-cart"></i>
+                            <span class="ms-1">Корзина (<span id="cartCount">@ViewBag.CartItemsCount</span>)</span>
+                        </a>
+
+                        <div class="vr mx-3"></div>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="dropdown">
+                                <button class="btn nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person"></i>
+                                    <span>Личный кабинет</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" href="/Profile">
+                                            <i class="bi bi-person-gear"></i>
+                                            Профиль
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Order/History">
+                                            <i class="bi bi-box-seam"></i>
+                                            История заказов
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <button class="dropdown-item" onclick="logout()">
+                                            <i class="bi bi-door-open"></i>
+                                            Выйти
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a href="/Home/Login" class="btn btn-outline-primary d-flex align-items-center">
+                                <i class="bi bi-door-closed"></i>
+                                <span class="ms-2">Войти</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "timeOut": "3000"
+        };
+
+        function updateUserBalance() {
+            fetch('/Balance/GetBalance')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('userBalance').textContent = data.balance.toLocaleString('ru-RU');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('Ошибка при обновлении баланса');
+                });
+        }
+
+        window.onload = function() {
+            if (document.getElementById('userBalance')) {
+                updateUserBalance();
+            }
+            updateCartCount();
+        }
+
+        function logout() {
+            Swal.fire({
+                title: 'Выход из аккаунта',
+                text: 'Вы уверены что хотите выйти?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Да, продолжить',
+                cancelButtonText: 'Отменить',
+                confirmButtonColor: '#00b300',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/Account/Logout', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok || response.status === 401) {
+                            toastr.success('Вы успешно вышли из аккаунта');
+                            window.location.href = '/';
+                            return;
+                        }
+                        throw new Error('Network response was not ok');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        toastr.error('Произошла ошибка при выходе из аккаунта');
+                    });
+                }
+            });
+        }
+
+        function updateCartCount() {
+            fetch('/Cart/GetCartCount', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const cartCountElement = document.getElementById('cartCount');
+                if (cartCountElement) {
+                    cartCountElement.textContent = data.count || 0;
+                }
+            })
+            .catch(error => {
+                console.error('Error updating cart count:', error);
+            });
+        }
+
+        function addToCart(productId) {
+            console.log('Adding product to cart:', productId);
+            fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ productId: productId })
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                if (response.status === 401) {
+                    toastr.error('Необходима авторизация');
+                    window.location.href = '/Home/Login';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                console.log('Response data:', data);
+                if (data.success) {
+                    updateCartCount();
+                    toastr.success('Товар добавлен в корзину');
+                    if (window.location.pathname === '/Cart' || window.location.pathname === '/Cart/Index') {
+                        window.location.reload();
+                    }
+                } else if (data.message) {
+                    toastr.warning(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Произошла ошибка при добавлении товара в корзину');
+            });
+        }
+
+        function removeFromCart(productId) {
+            Swal.fire({
+                title: 'Удаление товара',
+                text: 'Вы уверены что хотите удалить этот товар из корзины?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Продолжить',
+                cancelButtonText: 'Отменить',
+                confirmButtonColor: '#00b300',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/Cart/RemoveFromCart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ productId: productId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            toastr.success('Товар успешно удален из корзины');
+                            window.location.reload();
+                        }
+                        else {
+                            toastr.error('Не удалось удалить товар');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        toastr.error('Произошла ошибка при удалении товара');
+                    });
+                }
+            });
+        }
+
+        function clearCart() {
+            Swal.fire({
+                title: 'Очистка корзины',
+                text: 'Вы уверены хотите очистить корзину?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Продолжить',
+                cancelButtonText: 'Отменить',
+                confirmButtonColor: '#00b300',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/Cart/ClearCart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            toastr.success('Корзина успешно очищена');
+                            window.location.reload();
+                        }
+                        else {
+                            toastr.error('Не удалось очистить корзину');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        toastr.error('Произошла ошибка при очистке корзины');
+                    });
+                }
+            });
+        }
+
+        function openCart() {
+            fetch('/Cart')
+                .then(response => {
+                    if (response.status === 401) {
+                        toastr.error('Необходима авторизация');
+                        window.location.href = '/Home/Login';
+                        return;
+                    }
+                    window.location.href = '/Cart';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        window.addEventListener('load', updateCartCount);
+        
+        function checkWishlistItems() {
+            document.querySelectorAll('[data-wishlist-button]').forEach(button => {
+                const productId = button.getAttribute('data-product-id');
+                const icon = button.querySelector('i');  
+                
+                fetch(`/Wishlist/IsInWishlist?productId=${productId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.isInWishlist) {
+                            button.classList.add('in-wishlist');
+                            icon.classList.remove('bi-heart');
+                            icon.classList.add('bi-heart-fill');
+                        }
+                    });
+            });
+        }
+
+        function addToWishlist(productId) {
+            const button = document.querySelector(`[data-product-id="${productId}"]`);
+            const icon = button.querySelector('i');  
+            if (button.classList.contains('in-wishlist')) {
+                fetch('/Wishlist/RemoveFromWishlist', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(productId)
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        toastr.error('Необходима авторизация');
+                        window.location.href = '/Home/Login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+                    if (data.success) {
+                        button.classList.remove('in-wishlist');
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                        toastr.success('Товар удален из списка избранного');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('Произошла ошибка при удалении товара');
+                });
+                return;
+            }
+
+            fetch('/Wishlist/AddToWishlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(productId)
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    toastr.error('Необходима авторизация');
+                    window.location.href = '/Home/Login';
+                    return;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data) return;
+                if (data.success) {
+                    button.classList.add('in-wishlist');
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill');
+                    toastr.success('Товар добавлен в список избранного');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('Произошла ошибка при добавлении товара');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', checkWishlistItems);
+
+        const searchForm = document.getElementById('searchForm');
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const searchTerm = this.querySelector('input[name="query"]').value;
+                if (searchTerm.trim()) {
+                    window.location.href = `/Home/Search?query=${encodeURIComponent(searchTerm)}`;
+                }
+            });
+        }
+
+        function updateBalance() {
+            const balanceElement = document.getElementById('userBalance');
+            if (!document.querySelector('[data-user-authenticated="true"]') || !balanceElement) {
+                return; 
+            }
+
+            fetch('/Balance/GetBalance')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        balanceElement.textContent = data.balance;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const isAuthenticated = document.body.getAttribute('data-user-authenticated') === 'true';
+            if (isAuthenticated && document.getElementById('userBalance')) {
+                updateBalance();
+                setInterval(updateBalance, 15000); 
+            }
+        });
+    </script>
+</body>
+</html>

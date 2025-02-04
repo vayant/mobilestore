@@ -1,0 +1,140 @@
+@model mobilestore.Models.UserClass
+
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<style>
+    .form-control:focus {
+        border-color: #dee2e6;
+        box-shadow: none;
+    }
+
+    .form-control {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+
+    .form-control:hover {
+        border-color: #ced4da;
+    }
+
+    .register-container {
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        background: white;
+    }
+
+    .register-title {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-weight: 600;
+    }
+
+    .btn-register {
+        width: 100%;
+        padding: 0.75rem;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+    .password-requirements {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="register-container">
+    <h2 class="register-title">Регистрация</h2>
+    <form id="registerForm">
+        <div class="form-group mb-3">
+            <label for="username" class="form-label">Имя пользователя</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-person"></i>
+                </span>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+        </div>
+
+        <div class="form-group mb-3">
+            <label for="email" class="form-label">Email</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-envelope"></i>
+                </span>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+        </div>
+
+        <div class="form-group mb-4">
+            <label for="password" class="form-label">Пароль</label>
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-lock"></i>
+                </span>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="password-requirements">
+                Минимальная длина пароля - 6 символов. Допустимы только латинские буквы, цифры и специальные символы
+            </div>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-register">
+                <i class="bi bi-person-plus me-2"></i>Зарегистрироваться
+            </button>
+            <a href="/Home/Login" class="btn btn-outline-secondary">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Уже есть аккаунт
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-bottom-right",
+                "timeOut": "5000"
+            };
+            
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        email: document.getElementById('email').value,
+                        password: document.getElementById('password').value
+                    })
+                });
+
+                const data = await response.text();
+
+                if (response.ok) {
+                    toastr.success('Регистрация успешна! Теперь вы можете войти.');
+                    setTimeout(() => {
+                        window.location.href = '/Home/Login';
+                    }, 1500);
+                } else {
+                    toastr.error(data);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                toastr.error('Произошла ошибка при регистрации');
+            }
+        });
+    </script>
+} 

@@ -1,0 +1,91 @@
+@model IEnumerable<string>
+
+@{
+    ViewData["Title"] = "Бренды смартфонов";
+}
+
+<style>
+    .category-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+        background-color: #fff;
+        height: 100%;
+    }
+
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    }
+
+    .category-icon {
+        width: 64px;
+        height: 64px;
+        margin-bottom: 1rem;
+    }
+
+    .category-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="text-center mb-5">
+        <h2 class="display-5 mb-3">Бренды товаров</h2>
+        <p class="text-muted">Выберите интересующую вас категорию</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        <div class="col mb-4">
+            <a href="/Category/Products?category=Apple" class="text-decoration-none text-dark">
+                <div class="card category-card">
+                    <div class="card-body text-center p-4">
+                        <img src="/images/categories/apple.png" alt="Apple" class="category-icon">
+                        <h3 class="category-title">Apple</h3>
+                        <p class="category-description">iPhone и другие устройства Apple</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col mb-4">
+            <a href="/Category/Products?category=Samsung" class="text-decoration-none text-dark">
+                <div class="card category-card">
+                    <div class="card-body text-center p-4">
+                        <img src="/images/categories/samsung.png" alt="Samsung" class="category-icon">
+                        <h3 class="category-title">Samsung</h3>
+                        <p class="category-description">Смартфоны Samsung Galaxy</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col mb-4">
+            <a href="/Category/Products?category=Xiaomi" class="text-decoration-none text-dark">
+                <div class="card category-card">
+                    <div class="card-body text-center p-4">
+                        <img src="/images/categories/xiaomi.png" alt="Xiaomi" class="category-icon">
+                        <h3 class="category-title">Xiaomi</h3>
+                        <p class="category-description">Смартфоны Xiaomi и Redmi</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col mb-4">
+            <a href="/Category/Products?category=Huawei" class="text-decoration-none text-dark">
+                <div class="card category-card">
+                    <div class="card-body text-center p-4">
+                        <img src="/images/categories/huawei.png" alt="Huawei" class="category-icon">
+                        <h3 class="category-title">Huawei</h3>
+                        <p class="category-description">Смартфоны Huawei и Honor</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div> 

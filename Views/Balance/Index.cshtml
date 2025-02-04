@@ -1,0 +1,347 @@
+@{
+    ViewData["Title"] = "Пополнение баланса";
+}
+
+<style>
+    .balance-container {
+        max-width: 600px;
+        margin: 2rem auto;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        padding: 2rem;
+    }
+
+    .balance-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .current-balance {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 15px rgba(13, 110, 253, 0.15);
+    }
+
+    .balance-amount {
+        font-size: 2rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+    }
+
+    .payment-methods {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .payment-method {
+        flex: 1;
+        padding: 1.2rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .payment-method:hover {
+        border-color: #0d6efd;
+        background-color: #f8f9fa;
+    }
+
+    .payment-method.active {
+        border-color: #0d6efd;
+        background-color: #f0f7ff;
+    }
+
+    .payment-method i {
+        font-size: 1.5rem;
+        color: #0d6efd;
+        margin-bottom: 0.5rem;
+    }
+
+    .payment-form {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        transition: all 0.2s;
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.1);
+    }
+
+    .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-pay {
+        width: 100%;
+        padding: 0.8rem;
+        font-weight: 500;
+        margin-top: 1rem;
+        border-radius: 8px;
+        background: #0d6efd;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-pay:hover {
+        background: #0b5ed7;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+    }
+
+    .text-white-50 {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+</style>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Пополнение баланса</h2>
+                    <div class="mb-4">
+                        <label>Текущий баланс</label>
+                        <h4 id="currentBalance" class="text-primary">0 ₽</h4>
+                    </div>
+
+                    <!-- Вкладки -->
+                    <ul class="nav nav-tabs mb-4" id="paymentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="card-tab" data-bs-toggle="tab" data-bs-target="#card" type="button" role="tab">
+                                <i class="bi bi-credit-card"></i> Банковская карта МИР
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="sbp-tab" data-bs-toggle="tab" data-bs-target="#sbp" type="button" role="tab">
+                                <i class="bi bi-phone"></i> Система быстрых платежей
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Содержимое вкладок -->
+                    <div class="tab-content" id="paymentTabsContent">
+                        <!-- Вкладка оплаты картой -->
+                        <div class="tab-pane fade show active" id="card" role="tabpanel">
+                            <form id="balanceForm">
+                                <div class="mb-3">
+                                    <label for="cardNumber" class="form-label">Номер карты</label>
+                                    <input type="text" class="form-control" id="cardNumber" maxlength="19" placeholder="0000 0000 0000 0000" required>
+                                </div>
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label for="expiryDate" class="form-label">Срок действия (ММ/ГГ)</label>
+                                        <input type="text" class="form-control" id="expiryDate" maxlength="5" placeholder="MM/YY" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label for="cvv" class="form-label">CVV</label>
+                                        <input type="password" class="form-control" id="cvv" maxlength="3" placeholder="***" required>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="amount" class="form-label">Сумма пополнения</label>
+                                    <input type="number" class="form-control" id="amount" min="1" max="3000000" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Пополнить</button>
+                            </form>
+                        </div>
+
+                        <!-- Вкладка СБП -->
+                        <div class="tab-pane fade" id="sbp" role="tabpanel">
+                            <form id="sbpForm">
+                                <div class="mb-4">
+                                    <label for="sbpAmount" class="form-label">Сумма пополнения</label>
+                                    <input type="number" class="form-control" id="sbpAmount" min="1" max="2000000" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="phoneNumber" class="form-label">Номер телефона</label>
+                                    <input type="tel" class="form-control" id="phoneNumber" placeholder="+_ (___) ___-__-__" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Оплатить</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-bottom-right",
+            "timeOut": "5000",
+            "extendedTimeOut": "2000",
+            "preventDuplicates": true
+        };
+
+        document.getElementById('amount').addEventListener('input', function(e) {
+            const value = parseFloat(this.value);
+            if (value > 3000000) {
+                toastr.warning('Пожалуйста, выберите значение не более 3.000.000 ₽');
+                this.value = 3000000;
+            }
+        });
+
+        document.getElementById('sbpAmount').addEventListener('input', function(e) {
+            const value = parseFloat(this.value);
+            if (value > 2000000) {
+                toastr.warning('Пожалуйста, выберите значение не более 2.000.000 ₽');
+                this.value = 2000000;
+            }
+        });
+
+        document.getElementById('cardNumber').addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+            if (value.length > 19) {
+                value = value.slice(0, 19);
+            }
+            this.value = value;
+        });
+
+        document.getElementById('expiryDate').addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length >= 2) {
+                value = value.slice(0,2) + '/' + value.slice(2);
+            }
+            this.value = value;
+        });
+
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+
+        function loadCurrentBalance() {
+            fetch('/Balance/GetBalance')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('currentBalance').textContent = 
+                        new Intl.NumberFormat('ru-RU').format(data.balance) + ' ₽';
+                });
+        }
+
+        document.getElementById('balanceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const data = {
+                cardNumber: document.getElementById('cardNumber').value.replace(/\s/g, ''),
+                expiryDate: document.getElementById('expiryDate').value,
+                cvv: document.getElementById('cvv').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                paymentType: 'CARD'  
+            };
+
+            fetch('/Balance/UpdateBalance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    toastr.success('Баланс успешно пополнен');
+                    loadCurrentBalance();
+                    this.reset();
+                    if (window.updateUserBalance) {
+                        window.updateUserBalance();
+                    }
+                } else {
+                    toastr.error(result.message);
+                }
+            })
+            .catch(error => {
+                toastr.error('Произошла ошибка при пополнении баланса');
+            });
+        });
+
+        loadCurrentBalance();
+        document.getElementById('phoneNumber').addEventListener('input', function(e) {
+            let value = this.value.replace(/\D/g, '');
+            if (value.length > 0) {
+                if (value[0] === '7' || value[0] === '8') {
+                    value = '7' + value.slice(1);
+                }
+                let formattedValue = '';
+                if (value.length > 0) formattedValue += '+7 ';
+                if (value.length > 1) formattedValue += '(' + value.slice(1, 4);
+                if (value.length > 4) formattedValue += ') ' + value.slice(4, 7);
+                if (value.length > 7) formattedValue += '-' + value.slice(7, 9);
+                if (value.length > 9) formattedValue += '-' + value.slice(9, 11);
+                this.value = formattedValue;
+            }
+        });
+        document.getElementById('sbpForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('sbpAmount').value);
+            const phoneNumber = document.getElementById('phoneNumber').value.replace(/\D/g, '');
+            
+            if (isNaN(amount) || amount <= 0) {
+                toastr.error('Введите корректную сумму');
+                return;
+            }
+            
+            if (!phoneNumber.match(/^7\d{10}$/)) {
+                toastr.error('Введите корректный номер телефона');
+                return;
+            }
+
+            const data = {
+                amount: amount,
+                phoneNumber: phoneNumber,
+                paymentType: 'SBP'
+            };
+
+            console.log('Отправляемые данные:', data);
+
+            fetch('/Balance/UpdateBalance', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    toastr.success(result.message);
+                    loadCurrentBalance();
+                    this.reset();
+                    if (window.updateUserBalance) {
+                        window.updateUserBalance();
+                    }
+                } else {
+                    toastr.error(result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                toastr.error('Произошла ошибка при пополнении баланса');
+            });
+        });
+    </script>
+} 

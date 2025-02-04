@@ -1,0 +1,154 @@
+@model IEnumerable<mobilestore.Models.ModelOfOrder>
+
+@{
+    ViewData["Title"] = "История заказов";
+}
+
+<style>
+    .orders-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .order-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+        border: none;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .order-header {
+        background: linear-gradient(to right, #f8f9fa, #ffffff);
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .order-number {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .order-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+    }
+
+    .order-address {
+        color: #6c757d;
+        padding: 0.5rem 0;
+    }
+
+    .order-address strong {
+        color: #2c3e50;
+        margin-right: 0.5rem;
+    }
+
+    .order-address span {
+        font-size: 0.95rem;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        background-color: #f8f9fa;
+        font-weight: 500;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .table td {
+        vertical-align: middle;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .delivery-info {
+        background: #f8f9fa;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="orders-container mt-4">
+    <h2>История заказов</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mt-4 text-center">
+            У вас пока нет заказов
+        </div>
+    }
+    else
+    {
+        <div class="row mt-4">
+            @foreach (var order in Model)
+            {
+                <div class="col-12">
+                    <div class="order-card">
+                        <div class="order-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="order-number">Заказ №@order.Id</div>
+                                <div class="order-date">@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</div>
+                            </div>
+                            <div>
+                                <span class="badge bg-primary order-status">@order.Status</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Цена за единицу</th>
+                                            <th>Количество товаров</th>
+                                            <th>Общая сумма</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in order.OrderItems)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
+                                                             style="width: 50px; height: 50px; object-fit: contain; margin-right: 10px;">
+                                                        <span>@item.Product.Name</span>
+                                                    </div>
+                                                </td>
+                                                <td>@item.Price.ToString("C")</td>
+                                                <td>@item.Quantity</td>
+                                                <td>@((item.Price * item.Quantity).ToString("C"))</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>Итого:</strong></td>
+                                            <td><strong>@order.TotalAmount.ToString("C")</strong></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                            <div class="delivery-info">
+                                <strong>Адрес доставки:</strong>
+                                <p class="mb-0">г. @order.DeliveryCity, @order.DeliveryAddress</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div> 

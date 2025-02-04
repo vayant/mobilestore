@@ -1,0 +1,297 @@
+@model IEnumerable<mobilestore.Models.ItemInCart>
+
+@{
+    ViewData["Title"] = "Оформление заказа";
+    var totalAmount = ViewBag.TotalAmount;
+    var userBalance = ViewBag.UserBalance;
+}
+
+<style>
+    .form-control:focus {
+        border-color: #dee2e6;
+        box-shadow: none;
+    }
+
+    .form-control {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+    }
+
+    .form-control:hover {
+        border-color: #ced4da;
+    }
+
+    .checkout-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+    }
+
+    .order-items {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        margin-bottom: 2rem;
+    }
+
+    .order-summary {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    }
+
+    .delivery-form {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        margin-bottom: 2rem;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+    }
+
+    .btn-place-order {
+        width: 100%;
+        padding: 1rem;
+        font-weight: 500;
+        border-radius: 8px;
+    }
+
+    textarea.form-control {
+        min-height: 100px;
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table th {
+        border-top: none;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Оформление заказа</h2>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="bi bi-cart3"></i> Итоговый заказ
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Название</th>
+                                    <th class="text-center">Цена за единицу</th>
+                                    <th class="text-center">Количество товара</th>
+                                    <th class="text-end">Общая сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@item.Product.ImageUrl" alt="@item.Product.Name" 
+                                                     class="me-3" style="width: 50px; height: 50px; object-fit: contain;">
+                                                <span>@item.Product.Name</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">@item.Product.Price.ToString("C")</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">@((item.Product.Price * item.Quantity).ToString("C"))</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Итого:</strong></td>
+                                    <td class="text-end"><strong>@totalAmount.ToString("C")</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="bi bi-geo-alt"></i> Адрес доставки
+                    </h5>
+                    <div class="mb-4">
+                        <label for="deliveryCity" class="form-label">Город доставки <span class="text-danger">*</span></label>
+                        <input type="text" id="deliveryCity" class="form-control" 
+                               placeholder="Например: Москва" required>
+                        <div class="invalid-feedback" id="deliveryCityError">
+                            Пожалуйста, укажите город доставки
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label for="deliveryAddress" class="form-label">Адрес доставки <span class="text-danger">*</span></label>
+                        <textarea id="deliveryAddress" class="form-control" rows="3" 
+                                placeholder="Например: ул. Ленина, д. 1, кв. 123" required></textarea>
+                        <div class="invalid-feedback" id="deliveryAddressError">
+                            Пожалуйста, укажите адрес доставки
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Комментарий к заказу</label>
+                        <textarea id="comment" class="form-control" rows="3" 
+                                 placeholder="Дополнительная информация для курьера"></textarea>
+                        <div class="form-text">Необязательное поле</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm position-sticky" style="top: 1rem;">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="bi bi-info-circle"></i> Информация о заказе
+                    </h5>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Сумма заказа:</span>
+                            <strong>@totalAmount.ToString("C")</strong>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between">
+                            <span>Ваш баланс:</span>
+                            <strong class="@(userBalance < totalAmount ? "text-danger" : "text-success")">
+                                @userBalance.ToString("C")
+                            </strong>
+                        </div>
+                    </div>
+                    @if (userBalance < totalAmount)
+                    {
+                        <div class="alert alert-warning d-flex align-items-center" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <div>
+                                Недостаточно средств на балансе. 
+                                <a href="/Balance" class="alert-link">Пополнить баланс</a>
+                            </div>
+                        </div>
+                    }
+                    <button class="btn btn-primary w-100 btn-lg" onclick="placeOrder()"
+                            @(userBalance < totalAmount ? "disabled" : "")>
+                        <i class="bi bi-check2-circle me-2"></i>Оформить заказ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function validateForm() {
+            let isValid = true;
+            const deliveryAddress = document.getElementById('deliveryAddress');
+            const deliveryCity = document.getElementById('deliveryCity');
+            
+            deliveryAddress.classList.remove('is-invalid');
+            deliveryCity.classList.remove('is-invalid');
+            
+            if (!deliveryAddress.value.trim()) {
+                deliveryAddress.classList.add('is-invalid');
+                isValid = false;
+            }
+            
+            if (!deliveryCity.value.trim()) {
+                deliveryCity.classList.add('is-invalid');
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        function placeOrder() {
+            if (!validateForm()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: 'Пожалуйста, заполните все обязательные поля',
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+
+            const submitButton = document.querySelector('button[onclick="placeOrder()"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Оформление заказа...';
+
+            const data = {
+                deliveryAddress: document.getElementById('deliveryAddress').value.trim(),
+                deliveryCity: document.getElementById('deliveryCity').value.trim(),
+                comment: document.getElementById('comment')?.value?.trim()
+            };
+
+            fetch('/Order/PlaceOrder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Заказ оформлен!',
+                        html: `
+                            <div class="text-start">
+                                <p class="mb-2">Ваш заказ успешно оформлен.</p>
+                                <p class="mb-2"><strong>Адрес доставки:</strong><br>${data.deliveryCity}, ${data.deliveryAddress}</p>
+                                <p class="mb-0"><strong>Сумма заказа:</strong> ${result.orderDetails?.totalAmount.toLocaleString('ru-RU')} ₽</p>
+                            </div>
+                        `,
+                        confirmButtonText: 'Перейти к заказам',
+                        confirmButtonColor: '#0d6efd',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/Order/History';
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ошибка',
+                        text: result.message,
+                        confirmButtonColor: '#dc3545'
+                    });
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Оформить заказ';
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: 'Произошла ошибка при оформлении заказа',
+                    confirmButtonColor: '#dc3545'
+                });
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="bi bi-check2-circle me-2"></i>Оформить заказ';
+            });
+        }
+    </script>
+} 
